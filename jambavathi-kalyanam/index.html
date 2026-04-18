@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jambavathi Kalyanam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=IM+Fell+English:ital@0;1&amp;display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c8922a;
+      --gold-light: #e8b84b;
+      --gold-pale: #f5dfa0;
+      --crimson: #8b1a1a;
+      --cream: #fdf6e3;
+      --dark: #1a0f00;
+    }
+
+    body {
+      background: var(--dark);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Painting ── */
+    .painting-wrap {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .painting-wrap img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Placeholder shown when no image */
+    .painting-placeholder {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #2a1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(200,146,42,0.3);
+      font-family: 'IM Fell English', serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── Bottom panel ── */
+    .panel {
+      width: 100%;
+      max-width: 600px;
+      background: linear-gradient(180deg, #1a0f00 0%, #0f0800 100%);
+      padding: 28px 24px 48px;
+      border-top: 1px solid rgba(200,146,42,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* Title */
+    .title-block {
+      text-align: center;
+    }
+
+    .title-block h1 {
+      font-size: clamp(26px, 6vw, 38px);
+      font-weight: 600;
+      color: var(--gold-pale);
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .title-block p {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--gold);
+      opacity: 0.65;
+      letter-spacing: 2px;
+      margin-top: 6px;
+      font-family: 'IM Fell English', serif;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,146,42,0.35), transparent);
+    }
+
+    /* ── Player ── */
+    .player {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .player-label {
+      font-family: 'IM Fell English', serif;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.55;
+    }
+
+    .play-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background 0.3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .play-btn:active { background: rgba(200,146,42,0.15); }
+
+    .play-btn svg {
+      width: 26px;
+      height: 26px;
+      fill: var(--gold);
+    }
+
+    .play-btn svg.play-icon { margin-left: 4px; }
+    .play-btn.playing svg.play-icon { display: none; }
+    .play-btn:not(.playing) svg.pause-icon { display: none; }
+
+    /* ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(200,146,42,0.5);
+      width: 72px;
+      height: 72px;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .play-btn.playing .ripple {
+      animation: ripple 1.8s ease-out infinite;
+    }
+    @keyframes ripple {
+      0%  { transform: scale(1);   opacity: 0.5; }
+      100%{ transform: scale(2.2); opacity: 0;   }
+    }
+
+    /* Progress */
+    .progress-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-bg {
+      width: 100%;
+      height: 2px;
+      background: rgba(200,146,42,0.15);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--crimson), var(--gold));
+      border-radius: 2px;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(253,246,227,0.35);
+      letter-spacing: 1px;
+      font-family: 'IM Fell English', serif;
+    }
+
+    audio { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ── PAINTING ── Replace painting.jpg with your image file -->
+  <div class="painting-wrap">
+    <img src="painting.jpg" alt="Jambavathi Kalyanam" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display: none;">
+    <div class="painting-placeholder" style="display: flex;">Place painting.jpg here</div>
+  </div>
+
+  <!-- ── PANEL ── -->
+  <div class="panel">
+
+    <div class="title-block">
+      <h1>Jambavathi Kalyanam</h1>
+      <p>Traditional Mysore Painting</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="player">
+      <div class="player-label">Hear the story</div>
+
+      <button class="play-btn" id="playBtn" aria-label="Play narration">
+        <div class="ripple"></div>
+        <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        <svg class="pause-icon" viewBox="0 0 24 24">
+          <rect x="5" y="3" width="4" height="18"></rect>
+          <rect x="15" y="3" width="4" height="18"></rect>
+        </svg>
+      </button>
+
+      <div class="progress-wrap">
+        <div class="progress-bg" id="progressBg">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-row">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── AUDIO ── Replace narration.mp3 with your audio file -->
+  <audio id="narration" src="narration.mp3"></audio>
+
+  <script>
+    const audio = document.getElementById('narration');
+    const playBtn = document.getElementById('playBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressBg = document.getElementById('progressBg');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+        playBtn.classList.add('playing');
+      } else {
+        audio.pause();
+        playBtn.classList.remove('playing');
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        currentTimeEl.textContent = fmt(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      totalTimeEl.textContent = fmt(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.classList.remove('playing');
+      progressFill.style.width = '0%';
+      currentTimeEl.textContent = '0:00';
+    });
+
+    progressBg.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const rect = progressBg.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    });
+  </script>
+
+
+
+</body></html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jambavathi Kalyanam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=IM+Fell+English:ital@0;1&amp;display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c8922a;
+      --gold-light: #e8b84b;
+      --gold-pale: #f5dfa0;
+      --crimson: #8b1a1a;
+      --cream: #fdf6e3;
+      --dark: #1a0f00;
+    }
+
+    body {
+      background: var(--dark);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Painting ── */
+    .painting-wrap {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .painting-wrap img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Placeholder shown when no image */
+    .painting-placeholder {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #2a1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(200,146,42,0.3);
+      font-family: 'IM Fell English', serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── Bottom panel ── */
+    .panel {
+      width: 100%;
+      max-width: 600px;
+      background: linear-gradient(180deg, #1a0f00 0%, #0f0800 100%);
+      padding: 28px 24px 48px;
+      border-top: 1px solid rgba(200,146,42,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* Title */
+    .title-block {
+      text-align: center;
+    }
+
+    .title-block h1 {
+      font-size: clamp(26px, 6vw, 38px);
+      font-weight: 600;
+      color: var(--gold-pale);
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .title-block p {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--gold);
+      opacity: 0.65;
+      letter-spacing: 2px;
+      margin-top: 6px;
+      font-family: 'IM Fell English', serif;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,146,42,0.35), transparent);
+    }
+
+    /* ── Player ── */
+    .player {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .player-label {
+      font-family: 'IM Fell English', serif;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.55;
+    }
+
+    .play-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background 0.3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .play-btn:active { background: rgba(200,146,42,0.15); }
+
+    .play-btn svg {
+      width: 26px;
+      height: 26px;
+      fill: var(--gold);
+    }
+
+    .play-btn svg.play-icon { margin-left: 4px; }
+    .play-btn.playing svg.play-icon { display: none; }
+    .play-btn:not(.playing) svg.pause-icon { display: none; }
+
+    /* ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(200,146,42,0.5);
+      width: 72px;
+      height: 72px;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .play-btn.playing .ripple {
+      animation: ripple 1.8s ease-out infinite;
+    }
+    @keyframes ripple {
+      0%  { transform: scale(1);   opacity: 0.5; }
+      100%{ transform: scale(2.2); opacity: 0;   }
+    }
+
+    /* Progress */
+    .progress-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-bg {
+      width: 100%;
+      height: 2px;
+      background: rgba(200,146,42,0.15);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--crimson), var(--gold));
+      border-radius: 2px;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(253,246,227,0.35);
+      letter-spacing: 1px;
+      font-family: 'IM Fell English', serif;
+    }
+
+    audio { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ── PAINTING ── Replace painting.jpg with your image file -->
+  <div class="painting-wrap">
+    <img src="painting.jpg" alt="Jambavathi Kalyanam" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display: none;">
+    <div class="painting-placeholder" style="display: flex;">Place painting.jpg here</div>
+  </div>
+
+  <!-- ── PANEL ── -->
+  <div class="panel">
+
+    <div class="title-block">
+      <h1>Jambavathi Kalyanam</h1>
+      <p>Traditional Mysore Painting</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="player">
+      <div class="player-label">Hear the story</div>
+
+      <button class="play-btn" id="playBtn" aria-label="Play narration">
+        <div class="ripple"></div>
+        <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        <svg class="pause-icon" viewBox="0 0 24 24">
+          <rect x="5" y="3" width="4" height="18"></rect>
+          <rect x="15" y="3" width="4" height="18"></rect>
+        </svg>
+      </button>
+
+      <div class="progress-wrap">
+        <div class="progress-bg" id="progressBg">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-row">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── AUDIO ── Replace narration.mp3 with your audio file -->
+  <audio id="narration" src="narration.mp3"></audio>
+
+  <script>
+    const audio = document.getElementById('narration');
+    const playBtn = document.getElementById('playBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressBg = document.getElementById('progressBg');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+        playBtn.classList.add('playing');
+      } else {
+        audio.pause();
+        playBtn.classList.remove('playing');
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        currentTimeEl.textContent = fmt(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      totalTimeEl.textContent = fmt(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.classList.remove('playing');
+      progressFill.style.width = '0%';
+      currentTimeEl.textContent = '0:00';
+    });
+
+    progressBg.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const rect = progressBg.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    });
+  </script>
+
+
+
+</body>
+<!-- ── PAINTING ── Replace painting.jpg with your image file -->
+<div class="painting-wrap">
+    <img src="painting.jpg" alt="Jambavathi Kalyanam" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display: none;">
+    <div class="painting-placeholder" style="display: flex;">Place painting.jpg here</div>
+  </div>
+<img src="painting.jpg" alt="Jambavathi Kalyanam" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display: none;">
+<div class="painting-placeholder" style="display: flex;">Place painting.jpg here</div>
+<div class="painting-wrap">
+    <img src="painting.jpg" alt="Jambavathi Kalyanam" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display: none;">
+    <div class="painting-placeholder" style="display: flex;">Place painting.jpg here</div>
+  </div>
+<!-- ── PANEL ── -->
+<div class="panel">
+
+    <div class="title-block">
+      <h1>Jambavathi Kalyanam</h1>
+      <p>Traditional Mysore Painting</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="player">
+      <div class="player-label">Hear the story</div>
+
+      <button class="play-btn" id="playBtn" aria-label="Play narration">
+        <div class="ripple"></div>
+        <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        <svg class="pause-icon" viewBox="0 0 24 24">
+          <rect x="5" y="3" width="4" height="18"></rect>
+          <rect x="15" y="3" width="4" height="18"></rect>
+        </svg>
+      </button>
+
+      <div class="progress-wrap">
+        <div class="progress-bg" id="progressBg">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-row">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+<!-- ── AUDIO ── Replace narration.mp3 with your audio file -->
+<audio id="narration" src="narration.mp3"></audio>
+<script>
+    const audio = document.getElementById('narration');
+    const playBtn = document.getElementById('playBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressBg = document.getElementById('progressBg');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+        playBtn.classList.add('playing');
+      } else {
+        audio.pause();
+        playBtn.classList.remove('playing');
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        currentTimeEl.textContent = fmt(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      totalTimeEl.textContent = fmt(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.classList.remove('playing');
+      progressFill.style.width = '0%';
+      currentTimeEl.textContent = '0:00';
+    });
+
+    progressBg.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const rect = progressBg.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    });
+  </script>
+<body>
+
+  <!-- ── PAINTING ── Replace painting.jpg with your image file -->
+  <div class="painting-wrap">
+    <img src="painting.jpg" alt="Jambavathi Kalyanam" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display: none;">
+    <div class="painting-placeholder" style="display: flex;">Place painting.jpg here</div>
+  </div>
+
+  <!-- ── PANEL ── -->
+  <div class="panel">
+
+    <div class="title-block">
+      <h1>Jambavathi Kalyanam</h1>
+      <p>Traditional Mysore Painting</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="player">
+      <div class="player-label">Hear the story</div>
+
+      <button class="play-btn" id="playBtn" aria-label="Play narration">
+        <div class="ripple"></div>
+        <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        <svg class="pause-icon" viewBox="0 0 24 24">
+          <rect x="5" y="3" width="4" height="18"></rect>
+          <rect x="15" y="3" width="4" height="18"></rect>
+        </svg>
+      </button>
+
+      <div class="progress-wrap">
+        <div class="progress-bg" id="progressBg">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-row">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── AUDIO ── Replace narration.mp3 with your audio file -->
+  <audio id="narration" src="narration.mp3"></audio>
+
+  <script>
+    const audio = document.getElementById('narration');
+    const playBtn = document.getElementById('playBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressBg = document.getElementById('progressBg');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+        playBtn.classList.add('playing');
+      } else {
+        audio.pause();
+        playBtn.classList.remove('playing');
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        currentTimeEl.textContent = fmt(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      totalTimeEl.textContent = fmt(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.classList.remove('playing');
+      progressFill.style.width = '0%';
+      currentTimeEl.textContent = '0:00';
+    });
+
+    progressBg.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const rect = progressBg.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    });
+  </script>
+
+
+
+</body>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jambavathi Kalyanam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=IM+Fell+English:ital@0;1&amp;display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c8922a;
+      --gold-light: #e8b84b;
+      --gold-pale: #f5dfa0;
+      --crimson: #8b1a1a;
+      --cream: #fdf6e3;
+      --dark: #1a0f00;
+    }
+
+    body {
+      background: var(--dark);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Painting ── */
+    .painting-wrap {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .painting-wrap img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Placeholder shown when no image */
+    .painting-placeholder {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #2a1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(200,146,42,0.3);
+      font-family: 'IM Fell English', serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── Bottom panel ── */
+    .panel {
+      width: 100%;
+      max-width: 600px;
+      background: linear-gradient(180deg, #1a0f00 0%, #0f0800 100%);
+      padding: 28px 24px 48px;
+      border-top: 1px solid rgba(200,146,42,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* Title */
+    .title-block {
+      text-align: center;
+    }
+
+    .title-block h1 {
+      font-size: clamp(26px, 6vw, 38px);
+      font-weight: 600;
+      color: var(--gold-pale);
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .title-block p {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--gold);
+      opacity: 0.65;
+      letter-spacing: 2px;
+      margin-top: 6px;
+      font-family: 'IM Fell English', serif;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,146,42,0.35), transparent);
+    }
+
+    /* ── Player ── */
+    .player {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .player-label {
+      font-family: 'IM Fell English', serif;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.55;
+    }
+
+    .play-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background 0.3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .play-btn:active { background: rgba(200,146,42,0.15); }
+
+    .play-btn svg {
+      width: 26px;
+      height: 26px;
+      fill: var(--gold);
+    }
+
+    .play-btn svg.play-icon { margin-left: 4px; }
+    .play-btn.playing svg.play-icon { display: none; }
+    .play-btn:not(.playing) svg.pause-icon { display: none; }
+
+    /* ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(200,146,42,0.5);
+      width: 72px;
+      height: 72px;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .play-btn.playing .ripple {
+      animation: ripple 1.8s ease-out infinite;
+    }
+    @keyframes ripple {
+      0%  { transform: scale(1);   opacity: 0.5; }
+      100%{ transform: scale(2.2); opacity: 0;   }
+    }
+
+    /* Progress */
+    .progress-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-bg {
+      width: 100%;
+      height: 2px;
+      background: rgba(200,146,42,0.15);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--crimson), var(--gold));
+      border-radius: 2px;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(253,246,227,0.35);
+      letter-spacing: 1px;
+      font-family: 'IM Fell English', serif;
+    }
+
+    audio { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ── PAINTING ── Replace painting.jpg with your image file -->
+  <div class="painting-wrap">
+    <img src="painting.jpg" alt="Jambavathi Kalyanam" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="display: none;">
+    <div class="painting-placeholder" style="display: flex;">Place painting.jpg here</div>
+  </div>
+
+  <!-- ── PANEL ── -->
+  <div class="panel">
+
+    <div class="title-block">
+      <h1>Jambavathi Kalyanam</h1>
+      <p>Traditional Mysore Painting</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="player">
+      <div class="player-label">Hear the story</div>
+
+      <button class="play-btn" id="playBtn" aria-label="Play narration">
+        <div class="ripple"></div>
+        <svg class="play-icon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        <svg class="pause-icon" viewBox="0 0 24 24">
+          <rect x="5" y="3" width="4" height="18"></rect>
+          <rect x="15" y="3" width="4" height="18"></rect>
+        </svg>
+      </button>
+
+      <div class="progress-wrap">
+        <div class="progress-bg" id="progressBg">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-row">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── AUDIO ── Replace narration.mp3 with your audio file -->
+  <audio id="narration" src="narration.mp3"></audio>
+
+  <script>
+    const audio = document.getElementById('narration');
+    const playBtn = document.getElementById('playBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressBg = document.getElementById('progressBg');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+        playBtn.classList.add('playing');
+      } else {
+        audio.pause();
+        playBtn.classList.remove('playing');
+      }
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        currentTimeEl.textContent = fmt(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      totalTimeEl.textContent = fmt(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      playBtn.classList.remove('playing');
+      progressFill.style.width = '0%';
+      currentTimeEl.textContent = '0:00';
+    });
+
+    progressBg.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const rect = progressBg.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    });
+  </script>
+
+
+
+</body></html>
